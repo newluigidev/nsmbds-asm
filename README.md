@@ -5,6 +5,6 @@ This code was written using the NSMB ASM Reference database:
 https://github.com/MammaMiaTeam/NSMB-ASMReference
 
 and compiled using Fireflower:
-https://github.com/Overblade/Fireflower
+https://github.com/MammaMiaTeam/Fireflower
 
 In order to compile, Fireflower must be setup on your system & the NSMB ASM reference included in the code project. 
