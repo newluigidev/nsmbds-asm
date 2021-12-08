@@ -32,7 +32,7 @@ asm_func static void loadResourcesHook()
 
 nodisc static ConsumeItemResult consumeYourItem(Item& item, PowerupState currentPowerup)
 {
-	if (setRuntime == false && (currentPowerup != PowerupState::Mega))
+	if (setRuntime == false && isCollected == false && (currentPowerup != PowerupState::Mega))
 	{
 		item.collidedPlayer->powerupChangeStep = 1; //never actually figured out how this properly works - it doesn't work with this item since Mario's palette 'flicker' effect is set through the fireflower change code
 		item.collidedPlayer->powerupScaleTimer = 10; //does the scaling effect (this does work correctly :P)
@@ -44,7 +44,7 @@ nodisc static ConsumeItemResult consumeYourItem(Item& item, PowerupState current
 		
 	}
 	
-	else if (setRuntime == true)
+	else if (setRuntime == true && isCollected == true)
 		Sound::playSFXChannel0(0x17D, 0);
 	
 	return ConsumeItemResult::Points1000;
@@ -166,29 +166,35 @@ consumeYourItem:
 	B		0x020D4A14
 )");}
 
-quik(0x020FCAD4, 10, "MOV R5, R0", playerHook) //hooks to Player::onRender
-void playerHook(Player* player)
+quik(0x0211F98C, 10, "BL 0x0211F9B4", playerMoveHook) //hooks to Player::onRender
+void playerMoveHook(Player* player)
 {	
+	if (isCollected == true)
+	{
+		if (player->getFireKeyPressed() )
+		{
+			player->setMovementState(&Player::fireballState);
+		}
+	}		
+}
+
+quik(0x020FCAD4, 10, "MOV R5, R0", playerRenderHook)
+void playerRenderHook(Player* player)
+{
 	if (isCollected == true)
 	{
 		player->textureID = 2; //sets the Player's texture to the unused one 
 		
 		setRuntime = true;
-		
-		if (player->getFireKeyPressed())
-		{
-			player->setMovementState(&Player::fireballState);
-		}
 	}
 	
 	if ((player->runtimePowerup == PowerupState::Small) || (player->runtimePowerup == PowerupState::Super) || (player->runtimePowerup == PowerupState::Mega) || (player->runtimePowerup == PowerupState::Mini) 
-		|| (player->runtimePowerup == PowerupState::Shell) && setRuntime == true)
+	|| (player->runtimePowerup == PowerupState::Shell) && setRuntime == true)
 	{
 		player->textureID = 0;
 		isCollected = false;
 		setRuntime = false;
 	}
-			
 }
 
 rlnk(0x02110F1C, 10)

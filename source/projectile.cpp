@@ -83,7 +83,8 @@ s32 Projectile::onUpdate()
 	
 	
 	//checks for collision with a wall - deletes if collision occurs 
-	if (bool((collisionMgr.collisionResult & CollisionMgr::CollisionResult::WallAny)))
+	if ((bool((collisionMgr.collisionResult & CollisionMgr::CollisionResult::WallAny))) 
+		|| bool(collisionMgr.collisionResult & CollisionMgr::CollisionResult::GroundPlatform))
 	{	
 		SpawnParticle(0x95, &spawnPos);
 	
@@ -91,9 +92,8 @@ s32 Projectile::onUpdate()
 		this->destroy(true);
 	}
 	
-	
 	//checks for collision with the ground - vertical speed is increased in order to make the Iceball bounce 
-	if (bool(collisionMgr.collisionResult & CollisionMgr::CollisionResult::GroundAny))
+	if ((bool(collisionMgr.collisionResult & CollisionMgr::CollisionResult::GroundAny)))
     {
         velocity.y = 3.0fx;
     }
@@ -138,13 +138,26 @@ void Projectile::activeColliderCallback(ActiveCollider& self, ActiveCollider& ot
 	//a switch statement would probably look just as bad 
 	//anyway decides what type of Iceblock to use on certain actors 
 	
+	if (actor->id == 94 || actor->id == 95)
+	{
+		if ((*(u32*)((char*)actor + 0x471)) == 0x10001) //if koopa is in shell
+		{
+			Actor::spawnActor(251, 0, &iceblockPos, 0, 0, 0); 
+		}
+		
+		else if ((*(u32*)((char*)actor + 0x471)) == 0x10000) //if koopa not in shell
+		{
+			Actor::spawnActor(251, 0x00000100, &iceblockPos, 0, 0, 0);
+		}
+	}
+	
 	if (actor->id == 35 || actor->id == 83 || actor->id == 40 || actor->id == 54 ||
 		actor->id == 28 || actor->id == 84 || actor->id == 90 || actor->id == 136 || actor->id == 147 || actor->id == 143 || actor->id == 145 
 		|| actor->id == 123 || actor->id == 148 || actor->id == 149 || actor->id == 30 || actor->id == 126 || actor->id == 127 || actor->id == 110 || 
 		actor->id == 89 || actor->id == 118 || actor->id == 107)
 		Actor::spawnActor(251, 0, &iceblockPos, 0, 0, 0); 
 		
-	if (actor->id == 94 || actor->id == 95 || actor->id == 96 || actor->id == 68 || actor->id == 69 || actor->id == 88 || actor->id == 89
+	if (actor->id == 96 || actor->id == 68 || actor->id == 69 || actor->id == 88 || actor->id == 89
 		|| actor->id == 55 || actor->id == 39)
 		Actor::spawnActor(251, 0x00000100, &iceblockPos, 0, 0, 0);
 	
@@ -159,7 +172,8 @@ void Projectile::activeColliderCallback(ActiveCollider& self, ActiveCollider& ot
 		return;
 	
 	if (actor->id == 37 || actor->id == 38 || actor->id == 75 || actor->id == 76 || actor->id == 73 || actor->id == 112 || actor->id == 29
-		|| actor->id == 150|| actor->id == 98)
+		|| actor->id == 150 || actor->id == 98 || actor->id == 113 || actor->id == 135 || actor->id == 132 || actor->id == 98 || actor->id == 131 
+		|| actor->id == 129 || actor->id == 98 || actor->id == 43 || actor->id == 119 || actor->id == 128 || actor->id == 239 || actor->id == 171)
 		self.owner->destroy();
 	else 
 	{
@@ -169,3 +183,24 @@ void Projectile::activeColliderCallback(ActiveCollider& self, ActiveCollider& ot
 		
 		
 }
+
+void Projectile::onStageBeaten(Player& player)
+{
+	SpawnParticle(0x79, &position);
+	SpawnParticle(0x7A, &position);
+	Sound::playSFXChannel0(0x70, &position);
+	this->destroy(true);
+}
+
+quik(0x020DE3B4, 10, "MOV R6, R0", koopaHook)
+void koopaHook(StageEntity* koopa)
+{
+    cout << *(u32*)((char*)koopa + 0x471) << "\n";
+    return;
+}
+
+/*quik(0x020E05D0, 10, "BLX R1", koopaStateHook)
+void koopaStateHook(int r0, int* r1)
+{
+	cout << "state print: " << r1 << "\n";
+}*/

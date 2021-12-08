@@ -16,6 +16,8 @@ public:
 	
 	static void activeColliderCallback(ActiveCollider& self, ActiveCollider& other);
 
+	virtual void onStageBeaten(Player& player) override;
+
 	static constexpr u16 objectID = 0x14B;
 
 	static const ActorProfile profile;
