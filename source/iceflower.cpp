@@ -32,7 +32,7 @@ asm_func static void loadResourcesHook()
 
 nodisc static ConsumeItemResult consumeYourItem(Item& item, PowerupState currentPowerup)
 {
-	if (setRuntime == false && isCollected == false && (currentPowerup != PowerupState::Mega))
+	if (isCollected == false && (currentPowerup != PowerupState::Mega))
 	{
 		item.collidedPlayer->powerupChangeStep = 1; //never actually figured out how this properly works - it doesn't work with this item since Mario's palette 'flicker' effect is set through the fireflower change code
 		item.collidedPlayer->powerupScaleTimer = 10; //does the scaling effect (this does work correctly :P)
@@ -44,7 +44,7 @@ nodisc static ConsumeItemResult consumeYourItem(Item& item, PowerupState current
 		
 	}
 	
-	else if (setRuntime == true && isCollected == true)
+	else if (isCollected == true)
 		Sound::playSFXChannel0(0x17D, 0);
 	
 	return ConsumeItemResult::Points1000;
@@ -113,7 +113,10 @@ nodisc static void setupYourItem(Item& item)
 	
 	item.scale = Vec3(0x9C0); 
 	
-	isCollected = false;
+	if (isCollected == true)
+		return;
+	else 
+		isCollected = false;
 }
 
 hook(0x020D1640, 10) // Item::onCreate
@@ -171,7 +174,7 @@ void playerMoveHook(Player* player)
 {	
 	if (isCollected == true)
 	{
-		if (player->getFireKeyPressed() )
+		if (player->getFireKeyPressed())
 		{
 			player->setMovementState(&Player::fireballState);
 		}
